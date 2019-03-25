@@ -38,8 +38,9 @@ public abstract class CompressionInputStream extends InputStream implements Seek
   /**
    * The input stream to be compressed. 
    */
-  protected final InputStream in;
+  protected InputStream in;
   protected long maxAvailableData = 0L;
+  private boolean closed;
 
   private Decompressor trackedDecompressor;
 
@@ -51,6 +52,24 @@ public abstract class CompressionInputStream extends InputStream implements Seek
    * @throws IOException
    */
   protected CompressionInputStream(InputStream in) throws IOException {
+    initialize(in);
+  }
+
+  /**
+   * @param in
+   * @throws IOException
+   * This also invokes {@link #resetState()} to ensure states in child classes are initialized.
+   */
+  public void reinitialize(final InputStream in) throws IOException {
+    if (!closed) {
+      throw new IOException("close() must be called before re-initializing a stream");
+    }
+    resetState();
+    initialize(in);
+  }
+
+  private void initialize(final InputStream in) throws IOException {
+    this.closed = false;
     if (!(in instanceof Seekable) || !(in instanceof PositionedReadable)) {
         this.maxAvailableData = in.available();
     }
@@ -67,6 +86,7 @@ public abstract class CompressionInputStream extends InputStream implements Seek
         trackedDecompressor = null;
       }
     }
+    closed = true;
   }
   
   /**

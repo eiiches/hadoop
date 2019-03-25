@@ -191,6 +191,14 @@ public class DecompressorStream extends CompressionInputStream {
   }
 
   @Override
+  public void reinitialize(final InputStream is) throws IOException {
+    super.reinitialize(is);
+    eof = false;
+    closed = false;
+    lastBytesSent = 0;
+  }
+
+  @Override
   public long skip(long n) throws IOException {
     // Sanity checks
     if (n < 0) {
